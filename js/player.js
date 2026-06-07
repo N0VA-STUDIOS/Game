@@ -30,6 +30,11 @@ export class Player{
 
         this.x=Math.max(0,Math.min(1200,this.x));
         this.y=Math.max(200,Math.min(650,this.y));
+    
+        if(this.attackCooldown > 0){
+
+        this.attackCooldown--;
+}
     }
 
     draw(ctx){
@@ -49,6 +54,28 @@ export class Player{
             -this.height,
             this.width,
             this.height
+        if(this.attacking){
+
+        if(this.attacking){
+
+        ctx.fillStyle="rgba(255,255,0,0.4)";
+
+        ctx.beginPath();
+
+        ctx.arc(
+            0,
+            -40,
+            80,
+            0,
+            Math.PI*2
+    );
+
+    ctx.fill();
+
+}
+
+}
+        
         );
 
         ctx.restore();
