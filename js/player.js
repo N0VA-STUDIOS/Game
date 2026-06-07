@@ -12,7 +12,16 @@ export class Player{
         this.speed=4;
 
         this.color="cyan";
+    
+        this.hp = 100;
+
+        this.damage = 25;
+
+        this.attacking = false;
+
+        this.attackCooldown = 0;
     }
+    
 
     update(input){
 
