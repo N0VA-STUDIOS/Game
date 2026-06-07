@@ -10,6 +10,13 @@ export class Zombie{
         this.height=90;
 
         this.speed=1;
+        
+        this.hp = 50;
+
+        this.damage = 10;
+
+        this.attackCooldown = 0;
+    
     }
 
     update(player){
@@ -18,13 +25,28 @@ export class Zombie{
         const dy=player.y-this.y;
 
         const dist=Math.hypot(dx,dy);
+        
+        if(this.attackCooldown > 0){
 
-        if(dist>5){
+        this.attackCooldown--;
 
-            this.x+=(dx/dist)*this.speed;
-            this.y+=(dy/dist)*this.speed;
-        }
+}
+       if(dist > 60){
+
+    this.x += (dx/dist) * this.speed;
+    this.y += (dy/dist) * this.speed;
+
+}else{
+
+    if(this.attackCooldown <= 0){
+
+        player.hp -= this.damage;
+
+        this.attackCooldown = 60;
+
     }
+
+}
 
     draw(ctx){
 
@@ -43,6 +65,24 @@ export class Zombie{
             -90,
             60,
             90
+        ctx.fillStyle = "red";
+
+        ctx.fillRect(
+            -25,
+            -105,
+             50,
+             5
+);
+
+ctx.fillStyle = "lime";
+
+ctx.fillRect(
+    -25,
+    -105,
+    (this.hp / 50) * 50,
+    5
+);
+        
         );
 
         ctx.restore();
