@@ -66,7 +66,7 @@ export class Zombie{
             60,
             90
         ctx.fillStyle = "red";
-
+);
         ctx.fillRect(
             -25,
             -105,
