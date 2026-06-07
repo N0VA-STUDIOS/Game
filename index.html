@@ -2,30 +2,24 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Zombie Survival</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Zombie Survivor 2.5D</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <div id="menu">
-    <h1>ZOMBIE SURVIVAL</h1>
-    <button id="startBtn">Jugar</button>
+    <h1>ZOMBIE SURVIVOR</h1>
+    <button id="playBtn">JUGAR</button>
 </div>
 
 <div id="hud">
-    <div id="wave">Ronda 1</div>
-    <div id="health">Vida: 100</div>
-</div>
-
-<div id="pauseMenu">
-    <h2>Pausa</h2>
-    <button id="resumeBtn">Continuar</button>
+    <span id="wave">Ronda 1</span>
 </div>
 
 <canvas id="game"></canvas>
 
-<script src="game.js"></script>
+<script type="module" src="main.js"></script>
 
 </body>
 </html>
