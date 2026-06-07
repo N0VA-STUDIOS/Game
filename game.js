@@ -1,171 +1,248 @@
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
+//player
+export class Player{
 
-canvas.width = innerWidth;
-canvas.height = innerHeight;
-
-const menu = document.getElementById("menu");
-const pauseMenu = document.getElementById("pauseMenu");
-const startBtn = document.getElementById("startBtn");
-const resumeBtn = document.getElementById("resumeBtn");
-const waveText = document.getElementById("wave");
-const healthText = document.getElementById("health");
-const hud = document.getElementById("hud");
-
-let gameStarted = false;
-let paused = false;
-
-const keys = {};
-
-const player = {
-    x: 400,
-    y: 300,
-    size: 40,
-    speed: 4,
-    hp: 100
-};
-
-let wave = 1;
-let enemies = [];
-
-class Zombie{
     constructor(){
-        this.x = Math.random()*canvas.width;
-        this.y = Math.random()*canvas.height;
-        this.size = 35;
-        this.speed = 1 + Math.random();
-        this.hp = 3;
+
+        this.x=500;
+        this.y=350;
+
+        this.width=64;
+        this.height=96;
+
+        this.speed=4;
+
+        this.color="cyan";
+    }
+
+    update(input){
+
+        this.x+=input.x*this.speed;
+        this.y+=input.y*this.speed;
+
+        this.x=Math.max(0,Math.min(1200,this.x));
+        this.y=Math.max(200,Math.min(650,this.y));
+    }
+
+    draw(ctx){
+
+        const scale =
+        0.8 + ((this.y-200)/450)*0.4;
+
+        ctx.save();
+
+        ctx.translate(this.x,this.y);
+        ctx.scale(scale,scale);
+
+        ctx.fillStyle=this.color;
+
+        ctx.fillRect(
+            -this.width/2,
+            -this.height,
+            this.width,
+            this.height
+        );
+
+        ctx.restore();
+    }
+}
+js/enemy.js
+export class Zombie{
+
+    constructor(x,y){
+
+        this.x=x;
+        this.y=y;
+
+        this.width=60;
+        this.height=90;
+
+        this.speed=1;
+    }
+
+    update(player){
+
+        const dx=player.x-this.x;
+        const dy=player.y-this.y;
+
+        const dist=Math.hypot(dx,dy);
+
+        if(dist>5){
+
+            this.x+=(dx/dist)*this.speed;
+            this.y+=(dy/dist)*this.speed;
+        }
+    }
+
+    draw(ctx){
+
+        const scale =
+        0.8 + ((this.y-200)/450)*0.4;
+
+        ctx.save();
+
+        ctx.translate(this.x,this.y);
+        ctx.scale(scale,scale);
+
+        ctx.fillStyle="green";
+
+        ctx.fillRect(
+            -30,
+            -90,
+            60,
+            90
+        );
+
+        ctx.restore();
+    }
+}
+js/gamepad.js
+export function getGamepadInput(){
+
+    const pad = navigator.getGamepads()[0];
+
+    if(!pad){
+
+        return {
+            x:0,
+            y:0,
+            attack:false
+        };
+    }
+
+    return {
+
+        x:Math.abs(pad.axes[0])>0.15
+        ? pad.axes[0] : 0,
+
+        y:Math.abs(pad.axes[1])>0.15
+        ? pad.axes[1] : 0,
+
+        attack:pad.buttons[0].pressed
+    };
+}
+js/game.js
+import {Player} from "./player.js";
+import {Zombie} from "./enemy.js";
+import {getGamepadInput} from "./gamepad.js";
+
+export class Game{
+
+    constructor(canvas){
+
+        this.canvas=canvas;
+        this.ctx=canvas.getContext("2d");
+
+        this.player=new Player();
+
+        this.enemies=[];
+
+        for(let i=0;i<10;i++){
+
+            this.enemies.push(
+
+                new Zombie(
+                    Math.random()*1200,
+                    250+Math.random()*350
+                )
+            );
+        }
+
+        this.keys={};
+
+        addEventListener("keydown",e=>{
+
+            this.keys[e.key.toLowerCase()]=true;
+        });
+
+        addEventListener("keyup",e=>{
+
+            this.keys[e.key.toLowerCase()]=false;
+        });
     }
 
     update(){
-        const dx = player.x - this.x;
-        const dy = player.y - this.y;
-        const dist = Math.hypot(dx,dy);
 
-        this.x += dx/dist*this.speed;
-        this.y += dy/dist*this.speed;
+        let input={
+            x:0,
+            y:0
+        };
 
-        if(dist < 30){
-            player.hp -= 0.05;
-        }
+        if(this.keys["a"]) input.x=-1;
+        if(this.keys["d"]) input.x=1;
+        if(this.keys["w"]) input.y=-1;
+        if(this.keys["s"]) input.y=1;
+
+        const gamepad=getGamepadInput();
+
+        if(gamepad.x!==0)
+            input.x=gamepad.x;
+
+        if(gamepad.y!==0)
+            input.y=gamepad.y;
+
+        this.player.update(input);
+
+        this.enemies.forEach(e=>
+            e.update(this.player)
+        );
     }
 
     draw(){
-        ctx.fillStyle="green";
-        ctx.fillRect(this.x,this.y,this.size,this.size);
+
+        const ctx=this.ctx;
+
+        ctx.clearRect(
+            0,
+            0,
+            this.canvas.width,
+            this.canvas.height
+        );
+
+        ctx.fillStyle="#222";
+
+        ctx.fillRect(
+            0,
+            200,
+            this.canvas.width,
+            500
+        );
+
+        this.player.draw(ctx);
+
+        this.enemies.forEach(e=>e.draw(ctx));
     }
 }
+js/main.js
+import {Game} from "./game.js";
 
-function spawnWave(){
+const canvas=
+document.getElementById("game");
 
-    enemies = [];
+canvas.width=1280;
+canvas.height=720;
 
-    for(let i=0;i<wave*3;i++){
-        enemies.push(new Zombie());
-    }
+const game=
+new Game(canvas);
 
-    waveText.textContent="Ronda "+wave;
-}
+document
+.getElementById("playBtn")
+.onclick=()=>{
 
-function update(){
+    document
+    .getElementById("menu")
+    .style.display="none";
 
-    if(keys["w"]) player.y -= player.speed;
-    if(keys["s"]) player.y += player.speed;
-    if(keys["a"]) player.x -= player.speed;
-    if(keys["d"]) player.x += player.speed;
-
-    enemies.forEach(z=>z.update());
-
-    healthText.textContent =
-    "Vida: "+Math.floor(player.hp);
-
-    if(player.hp <= 0){
-        alert("Game Over");
-        location.reload();
-    }
-
-    if(enemies.length===0){
-        wave++;
-        spawnWave();
-    }
-}
-
-function draw(){
-
-    ctx.fillStyle="#222";
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-
-    ctx.fillStyle="cyan";
-    ctx.fillRect(
-        player.x,
-        player.y,
-        player.size,
-        player.size
-    );
-
-    enemies.forEach(z=>z.draw());
-}
+    document
+    .getElementById("hud")
+    .style.display="block";
+};
 
 function loop(){
 
-    if(!paused && gameStarted){
-        update();
-        draw();
-    }
+    game.update();
+    game.draw();
 
     requestAnimationFrame(loop);
 }
-
-startBtn.onclick=()=>{
-
-    menu.style.display="none";
-    hud.style.display="block";
-
-    gameStarted=true;
-
-    spawnWave();
-};
-
-resumeBtn.onclick=()=>{
-
-    paused=false;
-    pauseMenu.style.display="none";
-};
-
-window.addEventListener("keydown",e=>{
-
-    keys[e.key.toLowerCase()] = true;
-
-    if(e.key==="Escape" && gameStarted){
-
-        paused=!paused;
-
-        pauseMenu.style.display =
-        paused ? "flex" : "none";
-    }
-});
-
-window.addEventListener("keyup",e=>{
-
-    keys[e.key.toLowerCase()] = false;
-});
-
-window.addEventListener("click",()=>{
-
-    enemies.forEach((z,index)=>{
-
-        const dx = z.x-player.x;
-        const dy = z.y-player.y;
-
-        if(Math.hypot(dx,dy)<120){
-
-            z.hp--;
-
-            if(z.hp<=0){
-                enemies.splice(index,1);
-            }
-        }
-    });
-});
 
 loop();
