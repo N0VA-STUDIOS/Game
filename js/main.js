@@ -1,4 +1,7 @@
 //main
+
+alert("main cargado");
+
 import {Game} from "./game.js";
 
 const canvas=
